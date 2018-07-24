@@ -38,7 +38,7 @@ func Middleware(h http.Handler) http.Handler {
 }
 
 func ProductHandler(w http.ResponseWriter, r *http.Request) {
-	JSON(w, Global.ErrOne[Locale(context.Get(r, "locale"))])
+	JSON(w, Speak(context.Get(r, "locale")).ErrorTwo)
 
 	return
 }
@@ -51,29 +51,39 @@ func JSON(w http.ResponseWriter, v interface{}) {
 	fmt.Fprint(w, string(b))
 }
 
-type Language string
-
-func Locale(v interface{}) Language {
-	if v == nil {
-		return EN
+var (
+	EN = Global{
+		ErrorOne:   ErrorType{Code: "01", Desc: "Eng"},
+		ErrorTwo:   ErrorType{Code: "02", Desc: "Eng"},
+		ErrorThree: ErrorType{Code: "03", Desc: "Eng"},
 	}
-	return Language(v.(string))
-}
+	TH = Global{
+		ErrorOne:   ErrorType{Code: "01", Desc: "ไทย"},
+		ErrorTwo:   ErrorType{Code: "02", Desc: "ไทย"},
+		ErrorThree: ErrorType{Code: "03", Desc: "ไทย"},
+	}
 
-const (
-	TH Language = "th"
-	EN Language = "en"
+	Language = map[interface{}]Global{
+		"en": EN,
+		"th": TH,
+	}
 )
 
-var Global = Multiple{
-	ErrOne: map[Language]ErrorType{
-		TH: ErrorType{Code: "01", Desc: "ไทย"},
-		EN: ErrorType{Code: "01", Desc: "Eng"},
-	},
+func Speak(locale interface{}) Global {
+	if locale == nil {
+		return EN
+	}
+
+	if v, ok := Language[locale]; ok {
+		return v
+	}
+	return EN
 }
 
-type Multiple struct {
-	ErrOne map[Language]ErrorType
+type Global struct {
+	ErrorOne   ErrorType
+	ErrorTwo   ErrorType
+	ErrorThree ErrorType
 }
 
 type ErrorType struct {
