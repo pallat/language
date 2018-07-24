@@ -30,17 +30,13 @@ func main() {
 
 func Middleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("middleware", r.URL)
 		context.Set(r, "locale", mux.Vars(r)["locale"])
-
 		h.ServeHTTP(w, r)
 	})
 }
 
 func ProductHandler(w http.ResponseWriter, r *http.Request) {
 	JSON(w, Speak(context.Get(r, "locale")).ErrorTwo)
-
-	return
 }
 
 func JSON(w http.ResponseWriter, v interface{}) {
